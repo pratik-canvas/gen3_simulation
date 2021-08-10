@@ -1,0 +1,26 @@
+teleop:
+  left:
+    type: topic
+    message_type: std_msgs/Float64
+    topic_name: /left_sprocket_velocity_controller/command
+    deadman_buttons: [4]
+    axis_mappings:
+      -
+        axis: 1
+        target: data
+        scale: 2
+        offset: 0
+        
+  right:
+    type: topic
+    message_type: std_msgs/Float64
+    topic_name: /right_sprocket_velocity_controller/command
+    deadman_buttons: [4]
+    axis_mappings:
+      -
+        axis: 4
+        target: data
+        scale: 2
+        offset: 0
+
+

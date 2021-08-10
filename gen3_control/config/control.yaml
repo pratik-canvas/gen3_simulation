@@ -1,0 +1,15 @@
+left_joint_state_controller:
+  type: joint_state_controller/JointStateController
+  publish_rate: 25
+
+right_joint_state_controller:
+  type: joint_state_controller/JointStateController
+  publish_rate: 25
+
+left_sprocket_velocity_controller:
+  type: velocity_controllers/JointVelocityController
+  joint: left_sprocket_axle
+
+right_sprocket_velocity_controller:
+  type: velocity_controllers/JointVelocityController
+  joint: right_sprocket_axle

@@ -1,0 +1,144 @@
+<?xml version="1.0"?>
+<!--
+Software License Agreement (BSD)
+\file      track.urdf.xacro
+\authors   Pratik Gyawali <pratik@canvas.build>
+\copyright Copyright (c) 2021, Canvas Construction, Inc., All rights reserved.
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that
+the following conditions are met:
+ * Redistributions of source code must retain the above copyright notice, this list of conditions and the
+   following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+   following disclaimer in the documentation and/or other materials provided with the distribution.
+ * Neither the name of Canvas Construction nor the names of its contributors may be used to endorse or promote
+   products derived from this software without specific prior written permission.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WAR-
+RANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, IN-
+DIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="track">
+
+	<xacro:macro name="track" params="track_prefix">
+
+
+		    <!-- URDF file for general ROS systems such as ros_control, rviz, etc.           -->
+		    <!-- We define here;                                                             -->
+		    <!--     * a body to be wrapped by the track                                     -->
+		    <!--     * a sprocket to drive the track                                         -->
+		    <!--     * an axle and actuator for the sprocket                                 -->
+		    <!--     * an idler wheel on the other side of the sprocket                      -->
+		    <!-- Other entities specialized for Gazebo are defined in *_gazebo.urdf.xacro .  -->
+
+    <xacro:macro name="make_box_inertia" params="mass size_x size_y size_z">
+        <inertial>
+            <mass value="${mass}" />
+            <inertia ixx="${mass * (size_y * size_y + size_z * size_z) / 12}" ixy="0" ixz="0" iyy="${mass * (size_z * size_z + size_x * size_x) / 12}" iyz="0" izz="${mass * (size_x * size_x + size_y * size_y) / 12}" />
+        </inertial>
+    </xacro:macro>
+
+    <xacro:macro name="make_wheel_inertia" params="mass radius length">
+        <inertial>
+            <mass value="${mass}" />
+            <!-- assuming axis of cylinder is y, not z -->
+            <inertia ixx="${mass * (radius * radius / 4 + length * length / 12)}" ixy="0" ixz="0" iyy="${mass * radius * radius / 2}" iyz="0" izz="${mass * (radius * radius / 4 + length * length / 12)}" />
+        </inertial>
+    </xacro:macro>
+
+    <!-- body to be wrapped by the track -->
+
+    <link name="${track_prefix}_body">
+        <xacro:make_box_inertia mass="5" size_x="0.9" size_y="0.19" size_z="0.2" />
+
+        <visual>
+            <geometry>
+                <box size="0.9 0.19 0.2" />
+            </geometry>
+        </visual>
+
+        <collision>
+            <geometry>
+                <box size="0.9 0.19 0.2" />
+            </geometry>
+        </collision>
+    </link>
+
+    <!-- sprocket driving the track -->
+
+    <link name="${track_prefix}_sprocket">
+        <xacro:make_wheel_inertia mass="1" radius="0.08" length="0.19" />
+
+        <visual>
+            <origin xyz="0 0 0" rpy="${pi / 2} 0 0" />
+            <geometry>
+                <cylinder radius="0.08" length="0.19" />
+            </geometry>
+        </visual>
+        <visual>
+            <geometry>
+                <box size="0.01 0.19 0.20" />
+            </geometry>
+        </visual>
+        <visual>
+            <geometry>
+                <box size="0.20 0.19 0.01" />
+            </geometry>
+        </visual>
+
+        <collision>
+            <origin xyz="0 0 0" rpy="${pi / 2} 0 0" />
+            <geometry>
+                <cylinder radius="0.08" length="0.19" />
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="${track_prefix}_sprocket_axle" type="continuous">
+        <origin xyz="0.585 0 0" rpy="0 0 0" />
+        <parent link="${track_prefix}_body" />
+        <child link="${track_prefix}_sprocket" />
+        <axis xyz="0 1 0" />
+    </joint>
+
+    <transmission name="${track_prefix}_sprocket_transmission">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="${track_prefix}_sprocket_axle">
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="${track_prefix}_sprocket_actuator">
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+    <!-- idler on the other side of the sprocket -->
+
+    <link name="${track_prefix}_idler">
+        <xacro:make_wheel_inertia mass="0.5" radius="0.08" length="0.19" />
+
+        <visual>
+            <origin xyz="0 0 0" rpy="${pi / 2} 0 0" />
+            <geometry>
+                <cylinder radius="0.08" length="0.19" />
+            </geometry>
+        </visual>
+
+        <collision>
+            <origin xyz="0 0 0" rpy="${pi / 2} 0 0" />
+            <geometry>
+                <cylinder radius="0.08" length="0.19" />
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="${track_prefix}_idler_axle" type="fixed">
+        <origin xyz="-0.585 0 0" rpy="0 0 0" />
+        <parent link="${track_prefix}_body" />
+        <child link="${track_prefix}_idler" />
+    </joint>
+
+	</xacro:macro>
+
+</robot>

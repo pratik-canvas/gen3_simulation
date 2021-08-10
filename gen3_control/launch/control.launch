@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="robot_namespace" default="/"/>
+
+  <!-- Load robot description -->
+  <include file="$(find gen3_description)/launch/description.launch" >
+  </include>
+
+  <!-- Load controller configuration -->
+  <rosparam command="load" file="$(find gen3_control)/config/control.yaml" />
+
+  <!-- Spawn controllers -->
+
+
+  <!-- load and start the controllers -->
+  <node name="left_controller_starter" pkg="controller_manager" type="controller_manager" args="spawn left_joint_state_controller left_sprocket_velocity_controller" output="screen" />
+  <node name="right_controller_starter" pkg="controller_manager" type="controller_manager" args="spawn right_joint_state_controller right_sprocket_velocity_controller" output="screen" />
+
+  <!-- convert joint states to TF transforms for rviz, etc -->
+  <!-- <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen">
+    <param name="tf_prefix" value="example_track" />
+  </node> -->
+
+
+</launch>
